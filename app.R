@@ -1,4 +1,5 @@
 library(shiny)
+library(shinymaterial)
 
 #load libraries
 library(ggplot2)
@@ -456,9 +457,72 @@ create_cor_plot <- function(pData, xVar, yVar,legx,legy,myxlim=c(0,100),myylim=c
 ######################################################################################################################################################
 ######################################################################################################################################################
 ######################################################################################################################################################
-ui <- fluidPage(
-  theme = shinythemes::shinytheme("cosmo"),
-  titlePanel("FITOXY: exercise (in)tolerance in CTEPH patients"),
+ui <- material_page(
+  tags$head(
+    tags$link(rel = "stylesheet", type = "text/css", href = "css/my.css")
+  ),
+  # theme = shinythemes::shinytheme("cosmo"),
+  nav_bar_color = "blue",
+  # titlePanel("FITOXY: exercise (in)tolerance in CTEPH patients"),
+  title="FITOXY: exercise (in)tolerance in CTEPH patients",
+  material_side_nav(
+    fixed = TRUE, 
+    image_source = "img/baker-logo-leuven.jpg",
+    # Place side-nav tabs within side-nav
+    material_side_nav_tabs(
+      side_nav_tabs = c(
+        "About" = "about",
+        "Algorithm 1" = "algorithm_1",
+        "Algorithm 2" = "algorithm_2",
+        "Patient Simulation" = "patient_sim"
+      ),
+      icons = c("help_outline", "looks_one", "filter_2","replay")
+    )
+  ),
+  material_side_nav_tab_content(
+    side_nav_tab_id = "about",
+    tags$br(),
+    sidebarLayout(
+      sidebarPanel(
+        helpText("Calculate all parameters for a new patient, given the following measurements"),
+        hr(),
+        actionButton("update", "Update Plots"),
+        actionButton("reset", "Reset"),
+        hr(),
+        helpText(h3("Download results:")),
+        downloadButton("dl", "Download"),
+        hr(),
+        helpText(h3("1) Upload values:")),
+        helpText("Please, be sure the headers are same as the precomputed data (download above to check)"),
+        fileInput("ul", "Upload excel file", multiple = FALSE, accept = NULL, width = NULL),
+        helpText(h3("2) Or define manually:")),
+        actionButton("newpatient", "Add Patient"),
+        textInput("newgroup","Group",value = "NEW",width=180),
+        numericInput("vo2","VO2 (ml/min)",value = 1600,width=180),
+        numericInput("vco2","VCO2 (ml/min)",value = 1900,width=180),
+        numericInput("pao2","PaO2 (mmHg)",value = 97,width=180),
+        numericInput("pvo2","PvO2 (mmHg)",value = 21,width=180),
+        numericInput("hb","Hb (g/dL)",value = 14,width=180),
+        # numericInput("q","Q (L/min)",value = 26,width=180),
+        # numericInput("sato2a","SatO2_a (%)",value = 96,width=180),
+        # numericInput("sato2v","SatO2_v (%)",value = 23,width=180),
+        numericInput("paco2","PaCO2 (mmHg)",value = 40,width=180),
+        # numericInput("pvco2","PvCO2 (mmHg)",value = 50,width=180),
+        # numericInput("pha","pH arterial",value = 7.34,width=180),
+        # numericInput("phv","pH venous",value = 7.21,width=180),
+        width=3),
+      mainPanel(
+        fluidRow(column(12,DT::dataTableOutput("inDataExcel"),style = "overflow-x: scroll;")),
+        fluidRow(column(12,DT::dataTableOutput("inData"),style = "overflow-x: scroll;")),
+        fluidRow(column(12,DT::dataTableOutput("alldata"),style = "overflow-x: scroll;")),
+        hr(),
+        fluidRow(column(6,plotOutput("plotqvo2")),
+                 column(6,plotOutput("plotvavo2"))),
+        fluidRow(column(6,plotOutput("plotdlvo2")),
+                 column(6,plotOutput("plotdmvo2")))
+      )
+    )
+  ),
   navbarPage("",
 ######################################################################################################################################################
 ############### TAB 1
