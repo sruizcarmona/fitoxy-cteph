@@ -459,10 +459,11 @@ create_cor_plot <- function(pData, xVar, yVar,legx,legy,myxlim=c(0,100),myylim=c
 ######################################################################################################################################################
 ui <- material_page(
   tags$head(
+    tags$link(rel = "stylesheet", type = "text/css", href = "https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Two+Tone|Material+Icons+Round|Material+Icons+Sharp"),
     tags$link(rel = "stylesheet", type = "text/css", href = "css/my.css")
   ),
   # theme = shinythemes::shinytheme("cosmo"),
-  nav_bar_color = "blue",
+  nav_bar_color = "baker-blue",
   # titlePanel("FITOXY: exercise (in)tolerance in CTEPH patients"),
   title="FITOXY: exercise (in)tolerance in CTEPH patients",
   material_side_nav(
@@ -472,190 +473,355 @@ ui <- material_page(
     material_side_nav_tabs(
       side_nav_tabs = c(
         "About" = "about",
-        "Algorithm 1" = "algorithm_1",
-        "Algorithm 2" = "algorithm_2",
+        "Step 1" = "step_1",
+        "Step 2" = "step_2",
         "Patient Simulation" = "patient_sim"
       ),
-      icons = c("help_outline", "looks_one", "filter_2","replay")
+      icons = c("help", "looks_one", "looks_two","play_circle_filled")
     )
   ),
+  ###############################################################
+  ############### TAB 1
+  ###############################################################
+  
   material_side_nav_tab_content(
     side_nav_tab_id = "about",
     tags$br(),
-    sidebarLayout(
-      sidebarPanel(
-        helpText("Calculate all parameters for a new patient, given the following measurements"),
-        hr(),
-        actionButton("update", "Update Plots"),
-        actionButton("reset", "Reset"),
-        hr(),
-        helpText(h3("Download results:")),
-        downloadButton("dl", "Download"),
-        hr(),
-        helpText(h3("1) Upload values:")),
-        helpText("Please, be sure the headers are same as the precomputed data (download above to check)"),
-        fileInput("ul", "Upload excel file", multiple = FALSE, accept = NULL, width = NULL),
-        helpText(h3("2) Or define manually:")),
-        actionButton("newpatient", "Add Patient"),
-        textInput("newgroup","Group",value = "NEW",width=180),
-        numericInput("vo2","VO2 (ml/min)",value = 1600,width=180),
-        numericInput("vco2","VCO2 (ml/min)",value = 1900,width=180),
-        numericInput("pao2","PaO2 (mmHg)",value = 97,width=180),
-        numericInput("pvo2","PvO2 (mmHg)",value = 21,width=180),
-        numericInput("hb","Hb (g/dL)",value = 14,width=180),
-        # numericInput("q","Q (L/min)",value = 26,width=180),
-        # numericInput("sato2a","SatO2_a (%)",value = 96,width=180),
-        # numericInput("sato2v","SatO2_v (%)",value = 23,width=180),
-        numericInput("paco2","PaCO2 (mmHg)",value = 40,width=180),
-        # numericInput("pvco2","PvCO2 (mmHg)",value = 50,width=180),
-        # numericInput("pha","pH arterial",value = 7.34,width=180),
-        # numericInput("phv","pH venous",value = 7.21,width=180),
-        width=3),
-      mainPanel(
-        fluidRow(column(12,DT::dataTableOutput("inDataExcel"),style = "overflow-x: scroll;")),
-        fluidRow(column(12,DT::dataTableOutput("inData"),style = "overflow-x: scroll;")),
-        fluidRow(column(12,DT::dataTableOutput("alldata"),style = "overflow-x: scroll;")),
-        hr(),
-        fluidRow(column(6,plotOutput("plotqvo2")),
-                 column(6,plotOutput("plotvavo2"))),
-        fluidRow(column(6,plotOutput("plotdlvo2")),
-                 column(6,plotOutput("plotdmvo2")))
+    material_row(
+      material_column(
+        width = 12,
+        material_card(
+          title = "Reference",
+          "This app has been developed for the manuscript entitled:",
+          tags$br(),
+          tags$b("Unraveling oxygen pathway limitations in patients with chronicthrombo-embolic pulmonary hypertension – Key to exercise intolerance?"),
+          tags$br(),
+          "by ", tags$em("Erin J Howden, Sergio Ruiz-Carmona, Mathias Claeys, Ruben de Bosscher, Rik Willems, Bart Meyns, Tom Verbelen, Geert Maleux, Laurent Godinas,  Catharina Belge, Jan Bogaert, Piet Claus, Andre La Gerche, Marion Delcroix and Guido Claessen."),
+          tags$br(),
+          tags$br(),
+          "Currently submitted for publication."
+          )
+      )),
+    material_row(
+      material_column(
+        width = 12,
+        material_card(
+          title = "Details",
+          "This interactive application is made publicly available following this link:",
+          tags$a(href = "https://bakersportscardiology.shinyapps.io/fitoxy/",
+                 target = "_blank",
+                 "bakersportscardiology.shinyapps.io/fitoxy/. "),
+          "All equations and pipelines were developed with R language using freely available packages and, together with the bvpSolve package to derive the equations for both analysis steps, are publicly accessible at ",
+          tags$a(href = "https://github.com/sruizcarmona/fitoxy-cteph.",
+                 target = "_blank",
+                 "github.com/sruizcarmona/fitoxy-cteph."),
+          tags$br(),
+          tags$br(),
+          "As detailed in the publication, this app helps the user to quantify the following parameters of the O2 pathway at peak exercise: alveolar ventilation (VA), lung diffusion capacity for O2 (DL), cardiac output (Q), skeletal muscle diffusion capacity for O2 (DM), and mitochondrial oxidative phosphorylation capacity (vmax).",
+          tags$br(),
+          HTML("There are 3 different tabs for running different calculations: <b>Step 1</b>, <b>Step 2</b> and <b>Patient Simulation</b>."),
+        )
+      )),
+    material_row(
+      material_column(
+        width = 4,
+        material_card(
+          title = "Step 1",
+          "A characterization of the whole oxygen pathway is performed in this step. Using as input each patient’s details and their results from CPET, the pipeline returns mainly the O2 difference between veins and arteries and other parameters."
+        )
+      ),
+      material_column(
+        width = 4,
+        material_card(
+          title = "Step 2",
+          "The second step is the opposite trajectory of Step 1: how do changes on Step 1's parameters affect the original CPET and measurements? The outputs from the first step are used as input, and the updated parameters will be computed."
+        )
+      ),
+      material_column(
+        width = 4,
+        material_card(
+          title = "Patient Simulation",
+          "The last tab allows the user to simulate all parameters of a mock patient to evaluate the outcome of changing any of the parameters from the 2 Steps. "
+        )
       )
     )
   ),
-  navbarPage("",
-######################################################################################################################################################
-############### TAB 1
-######################################################################################################################################################
-    tabPanel("Algorithm 1",
-             sidebarLayout(
-               sidebarPanel(
-                 helpText("Calculate all parameters for a new patient, given the following measurements"),
-                 hr(),
-                 actionButton("update", "Update Plots"),
-                 actionButton("reset", "Reset"),
-                 hr(),
-                 helpText(h3("Download results:")),
-                 downloadButton("dl", "Download"),
-                 hr(),
-                 helpText(h3("1) Upload values:")),
-                 helpText("Please, be sure the headers are same as the precomputed data (download above to check)"),
-                 fileInput("ul", "Upload excel file", multiple = FALSE, accept = NULL, width = NULL),
-                 helpText(h3("2) Or define manually:")),
-                 actionButton("newpatient", "Add Patient"),
-                 textInput("newgroup","Group",value = "NEW",width=180),
-                 numericInput("vo2","VO2 (ml/min)",value = 1600,width=180),
-                 numericInput("vco2","VCO2 (ml/min)",value = 1900,width=180),
-                 numericInput("pao2","PaO2 (mmHg)",value = 97,width=180),
-                 numericInput("pvo2","PvO2 (mmHg)",value = 21,width=180),
-                 numericInput("hb","Hb (g/dL)",value = 14,width=180),
-                 # numericInput("q","Q (L/min)",value = 26,width=180),
-                 # numericInput("sato2a","SatO2_a (%)",value = 96,width=180),
-                 # numericInput("sato2v","SatO2_v (%)",value = 23,width=180),
-                 numericInput("paco2","PaCO2 (mmHg)",value = 40,width=180),
-                 # numericInput("pvco2","PvCO2 (mmHg)",value = 50,width=180),
-                 # numericInput("pha","pH arterial",value = 7.34,width=180),
-                 # numericInput("phv","pH venous",value = 7.21,width=180),
-                 width=3),
-             mainPanel(
-                 fluidRow(column(12,DT::dataTableOutput("inDataExcel"),style = "overflow-x: scroll;")),
-                 fluidRow(column(12,DT::dataTableOutput("inData"),style = "overflow-x: scroll;")),
-                 fluidRow(column(12,DT::dataTableOutput("alldata"),style = "overflow-x: scroll;")),
-                 hr(),
-                 fluidRow(column(6,plotOutput("plotqvo2")),
-                          column(6,plotOutput("plotvavo2"))),
-                 fluidRow(column(6,plotOutput("plotdlvo2")),
-                          column(6,plotOutput("plotdmvo2")))
-               )
-             )
+  ##################################################
+  ############### TAB 2
+  ##################################################
+  
+  material_side_nav_tab_content(
+    side_nav_tab_id = "step_1",
+    tags$br(),
+    material_row(
+      material_column(
+        width = 7,
+        material_card(
+          title = "",
+          "A characterization of the whole oxygen pathway is performed in this step. Using as input each patient’s details and their results from CPET, the pipeline returns mainly the O2 difference between veins and arteries and other parameters.",
+          tags$br(),
+          tags$br(),
+          "Calculate all parameters for a new patient, given the measurements below.",
+        )
+      ),
+      material_column(
+        width = 5,
+        material_card(
+          title="",
+          depth=1,
+          tags$b("Get sample/results Excel file:"),
+          tags$br(),
+          downloadButton("dl", "Download",class="baker-red"),
+          tags$br(),
+          tags$br(),
+          tags$b("Restart session:"),
+          tags$br(),
+          actionButton("reset", "Restart Session", class="baker-red"),
+        )
+      )
     ),
-######################################################################################################################################################
-############### TAB 2
-######################################################################################################################################################
-    tabPanel("Algorithm 2",
-             sidebarLayout(
-               sidebarPanel(
-                 helpText("Given all calculated parameters from Algorithm 1, calculate the \"original\" measurements."),
-                 hr(),
-                 actionButton("update.2", "Correlation Plots"),
-                 actionButton("reset.2", "Reset"),
-                 hr(),
-                 helpText(h3("Download results:")),
-                 downloadButton("dl.2", "Download"),
-                 hr(),
-                 helpText(h3("1) Upload values:")),
-                 helpText("Please, be sure the headers are same as the precomputed data (download in Algorithm 1 tab to check)"),
-                 fileInput("ul.2", "Upload excel file", multiple = FALSE, accept = NULL, width = NULL),
-                 helpText(h3("2) Or define manually:")),
-                 actionButton("newpatient.2", "Add Patient"),
-                 textInput("newgroup.2","Group",value = "NEW",width=180),
-                 numericInput("va.2","VA (L/min)",value = 40.98,width=180),
-                 numericInput("q.2","Q (L/min)",value = 12.84,width=180),
-                 numericInput("hb.2","Hb (g/dL)",value = 14,width=180),
-                 numericInput("vmax.2","Vmax (L/min)",value = 2880,width=180),
-                 numericInput("dmo2.2","DM (mL/mmHg/min)",value = 47.35,width=180),
-                 numericInput("dlo2.2","DL (mL/mmHg/min)",value = 22.49,width=180),
-                 numericInput("p50.2","p50 (mmHg)",value=0.24, width=180),
-                 # numericInput("satao2.2","SatO2_a (%)",value = 96,width=180),
-                 # numericInput("satcvo2.2","SatO2_v (%)",value = 23,width=180),
-                 width=3),
-               mainPanel(
-                 fluidRow(column(12,DT::dataTableOutput("inDataExcel.2"),style = "overflow-x: scroll;")),
-                 hr(),
-                 fluidRow(column(12,DT::dataTableOutput("inData.2"),style = "overflow-x: scroll;")),
-                 fluidRow(column(12,DT::dataTableOutput("alldata.2"),style = "overflow-x: scroll;")),
-                 hr(),
-                 fluidRow(column(6,plotOutput("corplot1")),
-                         # column(4,plotOutput("corplot3")),
-                         column(6,plotOutput("corplot2"))),
-                fluidRow(column(6,plotOutput("corplot4")),
-                         column(6,plotOutput("corplot5"))),
-                 # fluidRow(column(6,plotOutput("corplot1")),
-                 #          column(6,plotOutput("corplot2"))),
-                 # fluidRow(column(6,plotOutput("corplot3")),
-                 #          column(6,plotOutput("corplot4"))),
-                 # fluidRow(column(6,plotOutput("corplot5")),
-                 #          column(6,plotOutput("corplot6"))),
-                 # fluidRow(column(6,plotOutput("corplot7")),
-                 #          column(6,plotOutput("corplot8"))),
-               )
-               )
-             ),
-######################################################################################################################################################
-############### TAB 3
-######################################################################################################################################################
-    tabPanel("Patient Simulation",
-             sidebarLayout(
-               sidebarPanel(width = 3,
-                            helpText(h3("Step 1:")),
-                            helpText("Create a patient, initial data from a random patient."),
-                            helpText("Feel free to edit any of the fields!"),
-                            actionButton("init_all", "Initiate Patient"),
-                            hr(),
-                            helpText(h3("Step 2:")),
-                            helpText("Run algorithm 1 to calculate all parameters."),
-                            actionButton("calcalg1", "Calculate params (Alg 1)"),
-                            hr(),
-                            helpText(h3("Step 3:")),
-                            helpText("Run algorithm 2 to update initial measurements based on Alg 1 results."),
-                            helpText("Change fields in previous table to check their effect."),
-                            actionButton("calcalg2", "Update measurements (Alg 2)"),
-                            hr(),
-                            helpText(h4("Repeat steps above to play with different measurements and calculated parameters.")),
-               ),
-               
-               mainPanel(
-                 fluidRow(column(12,DT::dataTableOutput("init_meas"),style = "overflow-x: scroll;")),
-                 hr(),
-                 fluidRow(column(12,DT::dataTableOutput("calc_param"),style = "overflow-x: scroll;")),
-                 hr(),
-                 fluidRow(column(12,DT::dataTableOutput("final_data"),style = "overflow-x: scroll;")),
-                 )
-             ))
+    material_row(
+      material_column(
+        width = 4,
+        material_card(
+          title = "1) Upload values",
+          # helpText(h3("1) Upload values:")),
+          helpText("Please, be sure the headers are same as the precomputed data (download above to check)"),
+          fileInput("ul", "Upload excel file", multiple = FALSE, accept = NULL, width = NULL)
+        )
+      ),
+      material_column(
+        width = 8,
+        material_card(
+          title = "2) Or define manually",
+          actionButton("newpatient", "Add Patient",class="baker-red"),
+          tags$br(),
+          div(style="display: inline-block; width: 90px;",textInput("newgroup","Group",value = "NEW")),
+          div(style="display: inline-block; width: 20px;",HTML("<br>")),
+          div(style="display: inline-block; width: 90px;",numericInput("vo2","VO2 (ml/min)",value = 1600)),
+          div(style="display: inline-block; width: 20px;",HTML("<br>")),
+          div(style="display: inline-block; width: 90px;",numericInput("vco2","VCO2 (ml/min)",value = 1900)),
+          div(style="display: inline-block; width: 20px;",HTML("<br>")),
+          div(style="display: inline-block; width: 90px;",numericInput("pao2","PaO2 (mmHg)",value = 97)),
+          div(style="display: inline-block; width: 20px;",HTML("<br>")),
+          div(style="display: inline-block; width: 90px;",numericInput("pvo2","PvO2 (mmHg)",value = 21)),
+          div(style="display: inline-block; width: 20px;",HTML("<br>")),
+          div(style="display: inline-block; width: 90px;",numericInput("hb","Hb (g/dL)",value = 14)),
+          div(style="display: inline-block; width: 20px;",HTML("<br>")),
+          div(style="display: inline-block; width: 90px;",numericInput("paco2","PaCO2 (mmHg)",value = 40)),
+          div(style="display: inline-block; width: 20px;",HTML("<br>")),
+          
+          # numericInput("q","Q (L/min)",value = 26,width=180),
+          # numericInput("sato2a","SatO2_a (%)",value = 96,width=180),
+          # numericInput("sato2v","SatO2_v (%)",value = 23,width=180),
+          # numericInput("pvco2","PvCO2 (mmHg)",value = 50,width=180),
+          # numericInput("pha","pH arterial",value = 7.34,width=180),
+          # numericInput("phv","pH venous",value = 7.21,width=180),
+        )
+      )
+    ),
+    material_row(
+      material_column(
+        width = 12,
+        material_card(
+          title = "",
+          depth=1,
+          mainPanel(
+            fluidRow(column(12,DT::dataTableOutput("inDataExcel"),style = "overflow-x: scroll;")),
+            fluidRow(column(12,DT::dataTableOutput("inData"),style = "overflow-x: scroll;")),
+            # fluidRow(column(12,DT::dataTableOutput("alldata"),style = "overflow-x: scroll;")),
+          )
+        )
+      )
+    ),
+    material_row(
+      material_column(
+        width = 12,
+        material_card(
+          title = "",
+          depth=1,
+          mainPanel(
+            # fluidRow(column(12,DT::dataTableOutput("inDataExcel"),style = "overflow-x: scroll;")),
+            # fluidRow(column(12,DT::dataTableOutput("inData"),style = "overflow-x: scroll;")),
+            fluidRow(column(12,DT::dataTableOutput("alldata"),style = "overflow-x: scroll;")),
+          )
+        )
+      )
+    )
+  ),
+  ######################################################################################################################################################
+  ############### TAB 3
+  ######################################################################################################################################################
+  material_side_nav_tab_content(
+    side_nav_tab_id = "step_2",
+    tags$br(),
+    material_row(
+      material_column(
+        width = 7,
+        material_card(
+          title = "",
+          "The second step is the opposite trajectory of Step 1: how do changes on Step 1's parameters affect the original CPET and measurements? The outputs from the first step are used as input, and the updated parameters will be computed.",
+          tags$br(),
+          tags$br(),
+          "Given all calculated parameters from Step 1, calculate the \"original\" measurements.",
+        )
+      ),
+      material_column(
+        width = 5,
+        material_card(
+          title="",
+          depth=1,
+          tags$b("Get results Excel file:"),
+          tags$br(),
+          downloadButton("dl.2", "Download",class="baker-red"),
+          tags$br(),
+          tags$br(),
+          tags$b("Restart session:"),
+          tags$br(),
+          actionButton("reset.2", "Restart Session", class="baker-red"),
+        )
+      )
+    ),
+    material_row(
+      material_column(
+        width = 4,
+        material_card(
+          title = "1) Upload values",
+          # helpText(h3("1) Upload values:")),
+          helpText("Please, be sure the headers are same as the precomputed data (download in Step 1 tab to check)"),
+          fileInput("ul.2", "Upload excel file", multiple = FALSE, accept = NULL, width = NULL)
+        )
+      ),
+      material_column(
+        width = 8,
+        material_card(
+          title = "2) Or define manually",
+          actionButton("newpatient.2", "Add Patient",class="baker-red"),
+          tags$br(),
+          div(style="display: inline-block; width: 120px;",textInput("newgroup.2","Group",value = "NEW")),
+          div(style="display: inline-block; width: 20px;",HTML("<br>")),
+          div(style="display: inline-block; width: 120px;",numericInput("va.2","VA (L/min)",value = 40.98)),
+          div(style="display: inline-block; width: 20px;",HTML("<br>")),
+          div(style="display: inline-block; width: 120px;",numericInput("q.2","Q (L/min)",value = 12.84)),
+          div(style="display: inline-block; width: 20px;",HTML("<br>")),
+          div(style="display: inline-block; width: 120px;",numericInput("hb.2","Hb (g/dL)",value = 14)),
+          div(style="display: inline-block; width: 20px;",HTML("<br>")),
+          div(style="display: inline-block; width: 120px;",numericInput("vmax.2","Vmax (L/min)",value = 2880)),
+          div(style="display: inline-block; width: 20px;",HTML("<br>")),
+          div(style="display: inline-block; width: 120px;",numericInput("dmo2.2","DM (mL/mmHg/min)",value = 47.35)),
+          div(style="display: inline-block; width: 20px;",HTML("<br>")),
+          div(style="display: inline-block; width: 120px;",numericInput("dlo2.2","DL (mL/mmHg/min)",value = 22.49)),
+          div(style="display: inline-block; width: 20px;",HTML("<br>")),
+          div(style="display: inline-block; width: 120px;",numericInput("p50.2","p50 (mmHg)",value=0.24)),
+          div(style="display: inline-block; width: 20px;",HTML("<br>")),
+   
+          # numericInput("satao2.2","SatO2_a (%)",value = 96,width=180),
+          # numericInput("satcvo2.2","SatO2_v (%)",value = 23,width=180),
+        )
+      )
+    ),
+    material_row(
+      material_column(
+        width = 12,
+        material_card(
+          title = "",
+          depth=1,
+          mainPanel(
+            fluidRow(column(12,DT::dataTableOutput("inDataExcel.2"),style = "overflow-x: scroll;")),
+            fluidRow(column(12,DT::dataTableOutput("inData.2"),style = "overflow-x: scroll;")),
+          )
+        )
+      )
+    ),
+    material_row(
+      material_column(
+        width = 12,
+        material_card(
+          title = "",
+          depth=1,
+          mainPanel(
+            fluidRow(column(12,DT::dataTableOutput("alldata.2"),style = "overflow-x: scroll;")),
+          )
+        )
+      )
+    )
+  ),
+  
+  ##############################################################
+  ############### TAB 4
+  ##############################################################
+  
+  material_side_nav_tab_content(
+    side_nav_tab_id = "patient_sim",
+    tags$br(),
+    material_row(
+      material_column(
+        width = 4,
+        material_card(
+          title = "Step 0",
+          depth=1,
+          "Create a patient, initial data from a random patient.",
+          tags$br(),
+          "Feel free to play with any of the fields in the table!",
+          tags$br(),
+          actionButton("init_all", "Initiate Patient", class='baker-red'),
+        )
+      ),
+      material_column(
+        width = 4,
+        material_card(
+          title = "Step 1",
+          depth=1,
+          "Run Step 1 to calculate all parameters.",
+          tags$br(),
+          tags$br(),
+          tags$br(),
+          actionButton("calcalg1", "Calculate params (Step 1)",class='baker-red'),
+        )
+      ),
+      material_column(
+        width = 4,
+        material_card(
+          title = "Step 2",
+          depth=1,
+          "Run Step 2 to update initial measurements based on Step 1.",
+          tags$br(),
+          "Change fields in previous table to check their effect.",
+          tags$br(),
+          actionButton("calcalg2", "Update measurements (Step 2)",class='baker-red'),
+        )
+      )
+    ),
+    material_row(
+      material_column(
+        width = 12,
+        material_card(
+          title = "",
+          depth=1,
+          mainPanel(
+            fluidRow(column(12,DT::dataTableOutput("init_meas"),style = "overflow-x: scroll;")),
+            hr(),
+            fluidRow(column(12,DT::dataTableOutput("calc_param"),style = "overflow-x: scroll;")),
+            hr(),
+            fluidRow(column(12,DT::dataTableOutput("final_data"),style = "overflow-x: scroll;")),
+          )
+        )
+      )
+    ),
+    material_row(
+      material_column(
+        width = 12,
+        material_card(
+          title = "",
+          depth=0,
+          tags$b("Repeat steps above to play with different measurements and calculated parameters.")
+        )
+      )
+    )
   )
 )
 
-server <- function(input, output,session) {
+server <- function(input, output, session) {
 #######################
 ## ALGORITHM 1 (TAB 1)
 #######################
