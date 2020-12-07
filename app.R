@@ -458,14 +458,17 @@ create_cor_plot <- function(pData, xVar, yVar,legx,legy,myxlim=c(0,100),myylim=c
 ######################################################################################################################################################
 ######################################################################################################################################################
 ui <- material_page(
+  title="FITOXY: Exercise (in)tolerance in CTEPH patients",
+  # short_title = "FITOXY",
+  # nav_bar_fixed = FALSE,
   tags$head(
+    includeHTML(("www/google-analytics.html")),
     tags$link(rel = "stylesheet", type = "text/css", href = "https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Two+Tone|Material+Icons+Round|Material+Icons+Sharp"),
     tags$link(rel = "stylesheet", type = "text/css", href = "css/my.css")
   ),
   # theme = shinythemes::shinytheme("cosmo"),
   nav_bar_color = "baker-blue",
   # titlePanel("FITOXY: exercise (in)tolerance in CTEPH patients"),
-  title="FITOXY: exercise (in)tolerance in CTEPH patients",
   material_side_nav(
     fixed = TRUE, 
     image_source = "img/baker-logo-leuven.jpg",
@@ -512,7 +515,7 @@ ui <- material_page(
                  target = "_blank",
                  "bakersportscardiology.shinyapps.io/fitoxy/. "),
           "All equations and pipelines were developed with R language using freely available packages and, together with the bvpSolve package to derive the equations for both analysis steps, are publicly accessible at ",
-          tags$a(href = "https://github.com/sruizcarmona/fitoxy-cteph.",
+          tags$a(href = "https://github.com/sruizcarmona/fitoxy-cteph",
                  target = "_blank",
                  "github.com/sruizcarmona/fitoxy-cteph."),
           tags$br(),
