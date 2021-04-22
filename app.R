@@ -497,12 +497,16 @@ ui <- material_page(
           title = "Reference",
           "This app has been developed for the manuscript entitled:",
           tags$br(),
-          tags$b("Unraveling oxygen pathway limitations in patients with chronicthrombo-embolic pulmonary hypertension – Key to exercise intolerance?"),
+          tags$b("Oxygen Pathway Limitations in Patients with Chronic Thromboembolic Pulmonary Hypertension"),
+
           tags$br(),
           "by ", tags$em("Erin J Howden, Sergio Ruiz-Carmona, Mathias Claeys, Ruben de Bosscher, Rik Willems, Bart Meyns, Tom Verbelen, Geert Maleux, Laurent Godinas,  Catharina Belge, Jan Bogaert, Piet Claus, Andre La Gerche, Marion Delcroix and Guido Claessen."),
           tags$br(),
-          tags$br(),
-          "Currently submitted for publication."
+          "Published in", tags$em("Circulation"), "on the 15th of  April, 2021.",
+          tags$br(),"Available here:",
+          tags$a(href = "https://doi.org/10.1161/CIRCULATIONAHA.120.052899",
+                 target = "_blank",
+                 "https://doi.org/10.1161/CIRCULATIONAHA.120.052899.")
           )
       )),
     material_row(
