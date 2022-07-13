@@ -432,7 +432,8 @@ calc_alg2 <- function(meas){
 ### read preloaded file to make plots
 library(readxl)
 library(writexl)
-precomp_data <- read_excel('data/Combined data_ESC_abstract_060220120_CALCULATED.xlsx')
+#precomp_data <- read_excel('data/Combined data_ESC_abstract_060220120_CALCULATED.xlsx')
+precomp_data <- read_excel('data/outputfile_220713.xlsx')
 my_data <- precomp_data
 #########
 ## COR PLOT
